@@ -47,24 +47,40 @@
       border-collapse: collapse;
       width: max-content;
       min-width: 100%;
+      table-layout: fixed;
       font-size: 11px;
     }
 
-    th, td {
+    th,
+    td {
+      width: 62px;
+      min-width: 62px;
+      max-width: 62px;
+      padding: 4px 2px;
       border: 1px solid #dce5e8;
-      padding: 4px 3px;
       text-align: center;
-      min-width: 56px;
       vertical-align: middle;
     }
 
     th {
-      background: #dff3f0;
       position: sticky;
       top: 0;
       z-index: 2;
+      background: #dff3f0;
       line-height: 1.15;
-      white-space: normal;
+    }
+
+    .age {
+      display: block;
+      font-weight: bold;
+    }
+
+    .taille-cm {
+      display: block;
+      margin-top: 2px;
+      color: #45615f;
+      font-size: 10px;
+      font-weight: normal;
     }
 
     th:first-child,
@@ -72,6 +88,7 @@
       position: sticky;
       left: 0;
       z-index: 1;
+      width: 130px;
       min-width: 130px;
       max-width: 130px;
       background: #f3faf9;
@@ -93,11 +110,11 @@
     }
 
     .counter button {
-      border: 0;
-      border-radius: 50%;
       width: 24px;
       height: 24px;
       padding: 0;
+      border: 0;
+      border-radius: 50%;
       font-size: 16px;
       font-weight: bold;
       line-height: 24px;
@@ -116,8 +133,8 @@
 
     .number {
       min-width: 11px;
-      font-weight: bold;
       font-size: 13px;
+      font-weight: bold;
     }
 
     .actions {
@@ -128,9 +145,9 @@
     }
 
     .actions button {
+      padding: 9px 10px;
       border: 0;
       border-radius: 7px;
-      padding: 9px 10px;
       font-size: 12px;
       cursor: pointer;
     }
@@ -146,12 +163,13 @@
       p, #statut, .actions { display: none; }
       .table-wrap { overflow: visible; box-shadow: none; }
       table { width: 100%; font-size: 8px; }
-      th, td { padding: 3px; min-width: 0; }
+      th, td { width: auto; min-width: 0; max-width: none; padding: 3px; }
       .counter button { display: none; }
       .counter { display: block; }
       .number { font-size: 10px; }
       th:first-child, td:first-child {
         position: static;
+        width: auto;
         min-width: 0;
         max-width: none;
       }
@@ -192,17 +210,16 @@
     };
 
     const tailles = [
-      "Prématuré (45 cm)",
-      "Naissance / 0 mois (50 cm)",
-      "1 mois (54 cm)",
-      "2 mois (60 cm)",
-      "3 mois (60 cm)",
-      "6 mois (67 cm)",
-      "9 mois (71 cm)",
-      "12 mois / 1 an (74 cm)",
-      "18 mois (81 cm)",
-      "24 mois / 2 ans (86 cm)",
-      "3 ans (94 cm)"
+      { age: "0 mois", taille: "50 cm" },
+      { age: "1 mois", taille: "54 cm" },
+      { age: "2 mois", taille: "60 cm" },
+      { age: "3 mois", taille: "60 cm" },
+      { age: "6 mois", taille: "67 cm" },
+      { age: "9 mois", taille: "71 cm" },
+      { age: "12 mois", taille: "74 cm" },
+      { age: "18 mois", taille: "81 cm" },
+      { age: "24 mois", taille: "86 cm" },
+      { age: "3 ans", taille: "94 cm" }
     ];
 
     const articles = [
@@ -222,6 +239,7 @@
       "Bonnets",
       "Lolettes",
       "Biberons",
+      "Gigoteuses",
       "Autres"
     ];
 
@@ -234,7 +252,6 @@
     let donnees = {};
     let inventaireRef;
 
-    /* Création d’un identifiant unique pour l’inventaire partagé. */
     const url = new URL(window.location.href);
     let listeId = url.searchParams.get("liste");
 
@@ -248,7 +265,10 @@
       let html = "<thead><tr><th>Type d’article</th>";
 
       tailles.forEach(taille => {
-        html += `<th>${taille}</th>`;
+        html += `<th>
+          <span class="age">${taille.age}</span>
+          <span class="taille-cm">${taille.taille}</span>
+        </th>`;
       });
 
       html += "</tr></thead><tbody>";
@@ -292,11 +312,7 @@
 
           quantites[id] = Math.max(0, (quantites[id] || 0) + changement);
 
-          transaction.set(
-            inventaireRef,
-            { quantites },
-            { merge: true }
-          );
+          transaction.set(inventaireRef, { quantites }, { merge: true });
         });
       } catch (erreur) {
         alert("La modification n’a pas pu être enregistrée. Vérifie votre connexion Internet.");
@@ -345,7 +361,6 @@
 
     document.getElementById("excel").addEventListener("click", () => {
       const tableau = table.cloneNode(true);
-
       tableau.querySelectorAll("button").forEach(bouton => bouton.remove());
 
       tableau.querySelectorAll(".counter").forEach(compteur => {
