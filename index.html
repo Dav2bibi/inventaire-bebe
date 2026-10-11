@@ -32,14 +32,14 @@
       margin-bottom: 12px;
     }
 
-    .ok { color: #12685b; }
-    .attente { color: #8a5a00; }
+    .ok { color: #397568; }
+    .attente { color: #8a6a45; }
 
     .table-wrap {
       overflow-x: auto;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px #0001;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 3px 14px rgba(38, 50, 56, 0.08);
       -webkit-overflow-scrolling: touch;
     }
 
@@ -53,11 +53,11 @@
 
     th,
     td {
-      width: 70px;
-      min-width: 70px;
-      max-width: 70px;
-      padding: 6px 3px;
-      border: 1px solid #dce5e8;
+      width: 88px;
+      min-width: 88px;
+      max-width: 88px;
+      padding: 5px 2px;
+      border: 1px solid #e3e8e7;
       text-align: center;
       vertical-align: middle;
     }
@@ -66,7 +66,8 @@
       position: sticky;
       top: 0;
       z-index: 2;
-      background: #dff3f0;
+      background: #e4f0ec;
+      color: #365750;
       line-height: 1.2;
     }
 
@@ -78,7 +79,7 @@
     .taille-cm {
       display: block;
       margin-top: 3px;
-      color: #45615f;
+      color: #617a75;
       font-size: 11px;
       font-weight: normal;
     }
@@ -88,10 +89,10 @@
       position: sticky;
       left: 0;
       z-index: 1;
-      width: 145px;
-      min-width: 145px;
-      max-width: 145px;
-      background: #f3faf9;
+      width: 120px;
+      min-width: 120px;
+      max-width: 120px;
+      background: #f5faf8;
       text-align: left;
       font-weight: bold;
       line-height: 1.2;
@@ -99,14 +100,15 @@
 
     th:first-child {
       z-index: 3;
-      background: #dff3f0;
+      background: #e4f0ec;
     }
 
     .counter {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
+      white-space: nowrap;
     }
 
     .counter button {
@@ -115,35 +117,49 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 32px;
-      width: 32px;
-      height: 32px;
+      flex: 0 0 28px;
+      width: 28px;
+      height: 28px;
       aspect-ratio: 1 / 1;
       padding: 0;
       border: none;
       border-radius: 50%;
       font-family: Arial, sans-serif;
-      font-size: 21px;
+      font-size: 19px;
       font-weight: bold;
       line-height: 1;
       cursor: pointer;
       touch-action: manipulation;
+      transition: transform 0.15s ease, background 0.15s ease;
     }
 
     .minus {
-      background: #ffe0e0;
-      color: #a32020;
+      background: #f8dede;
+      color: #9b4b57;
+      box-shadow: 0 2px 5px rgba(155, 75, 87, 0.16);
+    }
+
+    .minus:active {
+      background: #efc7ca;
+      transform: scale(0.94);
     }
 
     .plus {
-      background: #ccefe8;
-      color: #12685b;
+      background: #d8eee6;
+      color: #397566;
+      box-shadow: 0 2px 5px rgba(57, 117, 102, 0.16);
+    }
+
+    .plus:active {
+      background: #c2e3d7;
+      transform: scale(0.94);
     }
 
     .number {
       min-width: 13px;
       font-size: 15px;
       font-weight: bold;
+      color: #334541;
     }
 
     .actions {
@@ -156,15 +172,38 @@
     .actions button {
       padding: 10px 12px;
       border: 0;
-      border-radius: 8px;
+      border-radius: 9px;
       font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 2px 5px rgba(38, 50, 56, 0.10);
+      transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    #partager { background: #4059ad; color: white; }
-    #excel { background: #1d6f42; color: white; }
-    #pdf { background: #12685b; color: white; }
-    #reset { background: #eceff1; color: #263238; }
+    .actions button:active {
+      transform: scale(0.97);
+      filter: brightness(0.96);
+    }
+
+    #partager {
+      background: #dfe5f7;
+      color: #4d5d94;
+    }
+
+    #excel {
+      background: #dceee4;
+      color: #43795a;
+    }
+
+    #pdf {
+      background: #dcefeb;
+      color: #397568;
+    }
+
+    #reset {
+      background: #f2e6e4;
+      color: #8b5a55;
+    }
 
     @media print {
       body { margin: 0; background: white; }
@@ -320,7 +359,6 @@
             : {};
 
           quantites[id] = Math.max(0, (quantites[id] || 0) + changement);
-
           transaction.set(inventaireRef, { quantites }, { merge: true });
         });
       } catch (erreur) {
