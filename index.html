@@ -4,62 +4,141 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventaire bébé partagé</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 12px;
       color: #263238;
       background: #fafafa;
     }
-    h1 { margin: 0 0 6px; }
-    p { color: #546e7a; }
-    #statut { font-size: 14px; font-weight: bold; }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: 21px;
+    }
+
+    p {
+      margin: 5px 0;
+      color: #546e7a;
+      font-size: 13px;
+    }
+
+    #statut {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
     .ok { color: #12685b; }
     .attente { color: #8a5a00; }
+
     .table-wrap {
       overflow-x: auto;
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px #0001;
+      border-radius: 9px;
+      box-shadow: 0 2px 10px #0001;
+      -webkit-overflow-scrolling: touch;
     }
-    table { border-collapse: collapse; width: max-content; min-width: 100%; }
-    th, td { border: 1px solid #dce5e8; padding: 8px; text-align: center; }
-    th { background: #dff3f0; position: sticky; top: 0; z-index: 2; }
-    th:first-child, td:first-child {
+
+    table {
+      border-collapse: collapse;
+      width: max-content;
+      min-width: 100%;
+      font-size: 11px;
+    }
+
+    th, td {
+      border: 1px solid #dce5e8;
+      padding: 4px 3px;
+      text-align: center;
+      min-width: 56px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #dff3f0;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      line-height: 1.15;
+      white-space: normal;
+    }
+
+    th:first-child,
+    td:first-child {
       position: sticky;
       left: 0;
       z-index: 1;
+      min-width: 130px;
+      max-width: 130px;
       background: #f3faf9;
       text-align: left;
       font-weight: bold;
+      line-height: 1.15;
     }
-    th:first-child { z-index: 3; background: #dff3f0; }
-    .counter { display: flex; justify-content: center; align-items: center; gap: 7px; }
+
+    th:first-child {
+      z-index: 3;
+      background: #dff3f0;
+    }
+
+    .counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
     .counter button {
       border: 0;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      font-size: 19px;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      font-size: 16px;
       font-weight: bold;
+      line-height: 24px;
       cursor: pointer;
     }
-    .minus { background: #ffe0e0; color: #a32020; }
-    .plus { background: #ccefe8; color: #12685b; }
-    .number { min-width: 20px; font-weight: bold; font-size: 17px; }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+
+    .minus {
+      background: #ffe0e0;
+      color: #a32020;
+    }
+
+    .plus {
+      background: #ccefe8;
+      color: #12685b;
+    }
+
+    .number {
+      min-width: 11px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
     .actions button {
       border: 0;
       border-radius: 7px;
-      padding: 10px 13px;
-      font-size: 14px;
+      padding: 9px 10px;
+      font-size: 12px;
       cursor: pointer;
     }
+
     #partager { background: #4059ad; color: white; }
     #excel { background: #1d6f42; color: white; }
     #pdf { background: #12685b; color: white; }
-    #reset { background: #eceff1; }
+    #reset { background: #eceff1; color: #263238; }
 
     @media print {
       body { margin: 0; background: white; }
@@ -67,17 +146,22 @@
       p, #statut, .actions { display: none; }
       .table-wrap { overflow: visible; box-shadow: none; }
       table { width: 100%; font-size: 8px; }
-      th, td { padding: 3px; }
+      th, td { padding: 3px; min-width: 0; }
       .counter button { display: none; }
       .counter { display: block; }
       .number { font-size: 10px; }
-      th:first-child, td:first-child { position: static; }
+      th:first-child, td:first-child {
+        position: static;
+        min-width: 0;
+        max-width: none;
+      }
     }
   </style>
 </head>
+
 <body>
   <h1>Inventaire bébé partagé</h1>
-  <p>Clique sur <strong>+</strong> ou <strong>−</strong>. Les modifications sont synchronisées automatiquement.</p>
+  <p>Clique sur <strong>+</strong> ou <strong>−</strong>. Les changements sont synchronisés automatiquement.</p>
   <p id="statut" class="attente">Connexion à l’inventaire…</p>
 
   <div class="table-wrap">
@@ -85,10 +169,10 @@
   </div>
 
   <div class="actions">
-    <button id="partager">Copier le lien à partager</button>
-    <button id="excel">Exporter en Excel</button>
-    <button id="pdf">Exporter en PDF</button>
-    <button id="reset">Réinitialiser toutes les quantités</button>
+    <button id="partager">Copier le lien</button>
+    <button id="excel">Exporter Excel</button>
+    <button id="pdf">Exporter PDF</button>
+    <button id="reset">Réinitialiser</button>
   </div>
 
   <script type="module">
@@ -98,29 +182,47 @@
       getFirestore, doc, setDoc, onSnapshot, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-    // Remplace ces valeurs par celles de ton projet Firebase.
-const firebaseConfig = {
-  apiKey: "AIzaSyBADIYuD9CRnfuiTjmQAxUKc5aKr_qQ8-Q",
-  authDomain: "habitsbebe-3ad97.firebaseapp.com",
-  projectId: "habitsbebe-3ad97",
-  storageBucket: "habitsbebe-3ad97.firebasestorage.app",
-  messagingSenderId: "1015119277918",
-  appId: "1:1015119277918:web:068a345261aa701d50e9cf"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBADIYuD9CRnfuiTjmQAxUKc5aKr_qQ8-Q",
+      authDomain: "habitsbebe-3ad97.firebaseapp.com",
+      projectId: "habitsbebe-3ad97",
+      storageBucket: "habitsbebe-3ad97.firebasestorage.app",
+      messagingSenderId: "1015119277918",
+      appId: "1:1015119277918:web:068a345261aa701d50e9cf"
+    };
 
     const tailles = [
-      "Prématuré (45 cm)", "Naissance / 0 mois (50 cm)",
-      "1 mois (54 cm)", "2 mois (60 cm)", "3 mois (60 cm)",
-      "6 mois (67 cm)", "9 mois (71 cm)", "12 mois / 1 an (74 cm)",
-      "18 mois (81 cm)", "24 mois / 2 ans (86 cm)", "3 ans (94 cm)"
+      "Prématuré (45 cm)",
+      "Naissance / 0 mois (50 cm)",
+      "1 mois (54 cm)",
+      "2 mois (60 cm)",
+      "3 mois (60 cm)",
+      "6 mois (67 cm)",
+      "9 mois (71 cm)",
+      "12 mois / 1 an (74 cm)",
+      "18 mois (81 cm)",
+      "24 mois / 2 ans (86 cm)",
+      "3 ans (94 cm)"
     ];
 
     const articles = [
-      "Bodies manches courtes", "Bodies manches longues", "Pyjamas légers",
-      "Pyjamas épais", "Grenouillères", "Pantalons / leggings", "Shorts",
-      "Hauts / pulls", "Gilets", "Salopettes", "Combinaisons",
-      "Vestes / manteaux", "Chaussettes / chaussons", "Bonnets",
-      "Lolettes", "Biberons", "Autres"
+      "Bodies manches courtes",
+      "Bodies manches longues",
+      "Pyjamas légers",
+      "Pyjamas épais",
+      "Grenouillères",
+      "Pantalons / leggings",
+      "Shorts",
+      "Hauts / pulls",
+      "Gilets",
+      "Salopettes",
+      "Combinaisons",
+      "Vestes / manteaux",
+      "Chaussettes / chaussons",
+      "Bonnets",
+      "Lolettes",
+      "Biberons",
+      "Autres"
     ];
 
     const app = initializeApp(firebaseConfig);
@@ -128,12 +230,14 @@ const firebaseConfig = {
     const db = getFirestore(app);
     const table = document.getElementById("inventaire");
     const statut = document.getElementById("statut");
+
     let donnees = {};
     let inventaireRef;
 
-    // Crée automatiquement un identifiant secret pour une nouvelle liste.
+    /* Création d’un identifiant unique pour l’inventaire partagé. */
     const url = new URL(window.location.href);
     let listeId = url.searchParams.get("liste");
+
     if (!listeId) {
       listeId = crypto.getRandomValues(new Uint32Array(4)).join("");
       url.searchParams.set("liste", listeId);
@@ -142,22 +246,33 @@ const firebaseConfig = {
 
     function creerTableau() {
       let html = "<thead><tr><th>Type d’article</th>";
-      tailles.forEach(taille => html += `<th>${taille}</th>`);
+
+      tailles.forEach(taille => {
+        html += `<th>${taille}</th>`;
+      });
+
       html += "</tr></thead><tbody>";
 
       articles.forEach((article, ligne) => {
         html += `<tr><td>${article}</td>`;
+
         tailles.forEach((taille, colonne) => {
           const id = `${ligne}-${colonne}`;
           const nombre = donnees[id] || 0;
-          html += `<td><div class="counter">
-            <button class="minus" data-id="${id}" data-change="-1" aria-label="Retirer un article">−</button>
-            <span class="number">${nombre}</span>
-            <button class="plus" data-id="${id}" data-change="1" aria-label="Ajouter un article">+</button>
-          </div></td>`;
+
+          html += `
+            <td>
+              <div class="counter">
+                <button class="minus" data-id="${id}" data-change="-1" aria-label="Retirer un article">−</button>
+                <span class="number">${nombre}</span>
+                <button class="plus" data-id="${id}" data-change="1" aria-label="Ajouter un article">+</button>
+              </div>
+            </td>`;
         });
+
         html += "</tr>";
       });
+
       table.innerHTML = html + "</tbody>";
 
       table.querySelectorAll("button[data-id]").forEach(bouton => {
@@ -169,14 +284,22 @@ const firebaseConfig = {
 
     async function modifier(id, changement) {
       try {
-        await runTransaction(db, async (transaction) => {
+        await runTransaction(db, async transaction => {
           const snapshot = await transaction.get(inventaireRef);
-          const valeurs = snapshot.exists() ? (snapshot.data().quantites || {}) : {};
-          valeurs[id] = Math.max(0, (valeurs[id] || 0) + changement);
-          transaction.set(inventaireRef, { quantites: valeurs }, { merge: true });
+          const quantites = snapshot.exists()
+            ? (snapshot.data().quantites || {})
+            : {};
+
+          quantites[id] = Math.max(0, (quantites[id] || 0) + changement);
+
+          transaction.set(
+            inventaireRef,
+            { quantites },
+            { merge: true }
+          );
         });
       } catch (erreur) {
-        alert("La modification n’a pas pu être enregistrée. Vérifie la connexion Internet.");
+        alert("La modification n’a pas pu être enregistrée. Vérifie votre connexion Internet.");
       }
     }
 
@@ -184,46 +307,78 @@ const firebaseConfig = {
       await signInAnonymously(auth);
       inventaireRef = doc(db, "inventaires", listeId);
 
-      onSnapshot(inventaireRef, async (snapshot) => {
-        if (!snapshot.exists()) {
-          await setDoc(inventaireRef, { quantites: {}, creeLe: new Date().toISOString() });
-          return;
+      onSnapshot(
+        inventaireRef,
+        async snapshot => {
+          if (!snapshot.exists()) {
+            await setDoc(inventaireRef, {
+              quantites: {},
+              creeLe: new Date().toISOString()
+            });
+            return;
+          }
+
+          donnees = snapshot.data().quantites || {};
+          creerTableau();
+          statut.textContent = "● Inventaire synchronisé";
+          statut.className = "ok";
+        },
+        () => {
+          statut.textContent = "● Synchronisation indisponible";
+          statut.className = "attente";
         }
-        donnees = snapshot.data().quantites || {};
-        creerTableau();
-        statut.textContent = "● Inventaire synchronisé";
-        statut.className = "ok";
-      }, () => {
-        statut.textContent = "● Synchronisation indisponible";
-        statut.className = "attente";
-      });
+      );
     }
 
     document.getElementById("partager").addEventListener("click", async () => {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("Le lien de cet inventaire a été copié. Tu peux l’envoyer à ta copine.");
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Le lien a été copié. Tu peux maintenant l’envoyer à ta copine.");
+      } catch {
+        prompt("Copie ce lien et envoie-le à ta copine :", window.location.href);
+      }
     });
 
-    document.getElementById("pdf").addEventListener("click", () => window.print());
+    document.getElementById("pdf").addEventListener("click", () => {
+      window.print();
+    });
 
     document.getElementById("excel").addEventListener("click", () => {
       const tableau = table.cloneNode(true);
+
       tableau.querySelectorAll("button").forEach(bouton => bouton.remove());
+
       tableau.querySelectorAll(".counter").forEach(compteur => {
         compteur.innerHTML = compteur.querySelector(".number").textContent;
       });
 
-      const contenu = `<html><head><meta charset="UTF-8"><style>
-        table { border-collapse: collapse; }
-        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
-        th { background: #dff3f0; } td:first-child { text-align: left; font-weight: bold; }
-      </style></head><body><h1>Inventaire bébé</h1>${tableau.outerHTML}</body></html>`;
+      const contenu = `
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              table { border-collapse: collapse; }
+              th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+              th { background: #dff3f0; }
+              td:first-child { text-align: left; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>Inventaire bébé</h1>
+            ${tableau.outerHTML}
+          </body>
+        </html>`;
 
-      const fichier = new Blob(["\ufeff", contenu], { type: "application/vnd.ms-excel;charset=utf-8" });
+      const fichier = new Blob(["\ufeff", contenu], {
+        type: "application/vnd.ms-excel;charset=utf-8"
+      });
+
       const lien = document.createElement("a");
       lien.href = URL.createObjectURL(fichier);
       lien.download = "inventaire-bebe.xls";
+      document.body.appendChild(lien);
       lien.click();
+      document.body.removeChild(lien);
       URL.revokeObjectURL(lien.href);
     });
 
@@ -235,6 +390,7 @@ const firebaseConfig = {
 
     demarrer().catch(() => {
       statut.textContent = "● Vérifie la configuration Firebase";
+      statut.className = "attente";
     });
   </script>
 </body>
