@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventaire bébé partagé</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      color: #263238;
+      background: #fafafa;
+    }
+    h1 { margin: 0 0 6px; }
+    p { color: #546e7a; }
+    #statut { font-size: 14px; font-weight: bold; }
+    .ok { color: #12685b; }
+    .attente { color: #8a5a00; }
+    .table-wrap {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #0001;
+    }
+    table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    th, td { border: 1px solid #dce5e8; padding: 8px; text-align: center; }
+    th { background: #dff3f0; position: sticky; top: 0; z-index: 2; }
+    th:first-child, td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #f3faf9;
+      text-align: left;
+      font-weight: bold;
+    }
+    th:first-child { z-index: 3; background: #dff3f0; }
+    .counter { display: flex; justify-content: center; align-items: center; gap: 7px; }
+    .counter button {
+      border: 0;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .minus { background: #ffe0e0; color: #a32020; }
+    .plus { background: #ccefe8; color: #12685b; }
+    .number { min-width: 20px; font-weight: bold; font-size: 17px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    .actions button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 13px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #partager { background: #4059ad; color: white; }
+    #excel { background: #1d6f42; color: white; }
+    #pdf { background: #12685b; color: white; }
+    #reset { background: #eceff1; }
+
+    @media print {
+      body { margin: 0; background: white; }
+      h1 { font-size: 18px; }
+      p, #statut, .actions { display: none; }
+      .table-wrap { overflow: visible; box-shadow: none; }
+      table { width: 100%; font-size: 8px; }
+      th, td { padding: 3px; }
+      .counter button { display: none; }
+      .counter { display: block; }
+      .number { font-size: 10px; }
+      th:first-child, td:first-child { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Inventaire bébé partagé</h1>
+  <p>Clique sur <strong>+</strong> ou <strong>−</strong>. Les modifications sont synchronisées automatiquement.</p>
+  <p id="statut" class="attente">Connexion à l’inventaire…</p>
+
+  <div class="table-wrap">
+    <table id="inventaire"></table>
+  </div>
+
+  <div class="actions">
+    <button id="partager">Copier le lien à partager</button>
+    <button id="excel">Exporter en Excel</button>
+    <button id="pdf">Exporter en PDF</button>
+    <button id="reset">Réinitialiser toutes les quantités</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, onSnapshot, runTransaction
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    // Remplace ces valeurs par celles de ton projet Firebase.
+const firebaseConfig = {
+  apiKey: "AIzaSyBADIYuD9CRnfuiTjmQAxUKc5aKr_qQ8-Q",
+  authDomain: "habitsbebe-3ad97.firebaseapp.com",
+  projectId: "habitsbebe-3ad97",
+  storageBucket: "habitsbebe-3ad97.firebasestorage.app",
+  messagingSenderId: "1015119277918",
+  appId: "1:1015119277918:web:068a345261aa701d50e9cf"
+};
+
+    const tailles = [
+      "Prématuré (45 cm)", "Naissance / 0 mois (50 cm)",
+      "1 mois (54 cm)", "2 mois (60 cm)", "3 mois (60 cm)",
+      "6 mois (67 cm)", "9 mois (71 cm)", "12 mois / 1 an (74 cm)",
+      "18 mois (81 cm)", "24 mois / 2 ans (86 cm)", "3 ans (94 cm)"
+    ];
+
+    const articles = [
+      "Bodies manches courtes", "Bodies manches longues", "Pyjamas légers",
+      "Pyjamas épais", "Grenouillères", "Pantalons / leggings", "Shorts",
+      "Hauts / pulls", "Gilets", "Salopettes", "Combinaisons",
+      "Vestes / manteaux", "Chaussettes / chaussons", "Bonnets",
+      "Lolettes", "Biberons", "Autres"
+    ];
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const table = document.getElementById("inventaire");
+    const statut = document.getElementById("statut");
+    let donnees = {};
+    let inventaireRef;
+
+    // Crée automatiquement un identifiant secret pour une nouvelle liste.
+    const url = new URL(window.location.href);
+    let listeId = url.searchParams.get("liste");
+    if (!listeId) {
+      listeId = crypto.getRandomValues(new Uint32Array(4)).join("");
+      url.searchParams.set("liste", listeId);
+      window.history.replaceState({}, "", url);
+    }
+
+    function creerTableau() {
+      let html = "<thead><tr><th>Type d’article</th>";
+      tailles.forEach(taille => html += `<th>${taille}</th>`);
+      html += "</tr></thead><tbody>";
+
+      articles.forEach((article, ligne) => {
+        html += `<tr><td>${article}</td>`;
+        tailles.forEach((taille, colonne) => {
+          const id = `${ligne}-${colonne}`;
+          const nombre = donnees[id] || 0;
+          html += `<td><div class="counter">
+            <button class="minus" data-id="${id}" data-change="-1" aria-label="Retirer un article">−</button>
+            <span class="number">${nombre}</span>
+            <button class="plus" data-id="${id}" data-change="1" aria-label="Ajouter un article">+</button>
+          </div></td>`;
+        });
+        html += "</tr>";
+      });
+      table.innerHTML = html + "</tbody>";
+
+      table.querySelectorAll("button[data-id]").forEach(bouton => {
+        bouton.addEventListener("click", () => {
+          modifier(bouton.dataset.id, Number(bouton.dataset.change));
+        });
+      });
+    }
+
+    async function modifier(id, changement) {
+      try {
+        await runTransaction(db, async (transaction) => {
+          const snapshot = await transaction.get(inventaireRef);
+          const valeurs = snapshot.exists() ? (snapshot.data().quantites || {}) : {};
+          valeurs[id] = Math.max(0, (valeurs[id] || 0) + changement);
+          transaction.set(inventaireRef, { quantites: valeurs }, { merge: true });
+        });
+      } catch (erreur) {
+        alert("La modification n’a pas pu être enregistrée. Vérifie la connexion Internet.");
+      }
+    }
+
+    async function demarrer() {
+      await signInAnonymously(auth);
+      inventaireRef = doc(db, "inventaires", listeId);
+
+      onSnapshot(inventaireRef, async (snapshot) => {
+        if (!snapshot.exists()) {
+          await setDoc(inventaireRef, { quantites: {}, creeLe: new Date().toISOString() });
+          return;
+        }
+        donnees = snapshot.data().quantites || {};
+        creerTableau();
+        statut.textContent = "● Inventaire synchronisé";
+        statut.className = "ok";
+      }, () => {
+        statut.textContent = "● Synchronisation indisponible";
+        statut.className = "attente";
+      });
+    }
+
+    document.getElementById("partager").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(window.location.href);
+      alert("Le lien de cet inventaire a été copié. Tu peux l’envoyer à ta copine.");
+    });
+
+    document.getElementById("pdf").addEventListener("click", () => window.print());
+
+    document.getElementById("excel").addEventListener("click", () => {
+      const tableau = table.cloneNode(true);
+      tableau.querySelectorAll("button").forEach(bouton => bouton.remove());
+      tableau.querySelectorAll(".counter").forEach(compteur => {
+        compteur.innerHTML = compteur.querySelector(".number").textContent;
+      });
+
+      const contenu = `<html><head><meta charset="UTF-8"><style>
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+        th { background: #dff3f0; } td:first-child { text-align: left; font-weight: bold; }
+      </style></head><body><h1>Inventaire bébé</h1>${tableau.outerHTML}</body></html>`;
+
+      const fichier = new Blob(["\ufeff", contenu], { type: "application/vnd.ms-excel;charset=utf-8" });
+      const lien = document.createElement("a");
+      lien.href = URL.createObjectURL(fichier);
+      lien.download = "inventaire-bebe.xls";
+      lien.click();
+      URL.revokeObjectURL(lien.href);
+    });
+
+    document.getElementById("reset").addEventListener("click", async () => {
+      if (confirm("Effacer toutes les quantités pour vous deux ?")) {
+        await setDoc(inventaireRef, { quantites: {} }, { merge: true });
+      }
+    });
+
+    demarrer().catch(() => {
+      statut.textContent = "● Vérifie la configuration Firebase";
+    });
+  </script>
+</body>
+</html>
